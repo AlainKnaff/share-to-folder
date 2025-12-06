@@ -98,7 +98,7 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 		contentResolver.openOutputStream(destFile.uri)!!
 
 	    // copy input to output
-	    inStream.transferTo(outStream);
+	    inStream.copyTo(outStream);
 	    inStream.close()
 	    outStream.close()
 	    runOnUiThread { finish() }

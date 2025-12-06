@@ -13,6 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.graphics.drawable.IconCompat
+import android.annotation.TargetApi
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -107,8 +108,10 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 	super.onCreate(savedInstanceState)
-	val key = intent.getStringExtra(Intent.EXTRA_SHORTCUT_ID)
-	Log.i(TAG, "key="+key)
+	var key:String?=null
+	@TargetApi(29) {
+	    key = intent.getStringExtra(Intent.EXTRA_SHORTCUT_ID)
+	}
 	if(key != null) {
 	    val uri=Uri.parse(key)
 	    addOrRefreshShortcut(uri,false)

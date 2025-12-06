@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "lu.knaff.alain.share_to_folder"
-        minSdk = 24
+        minSdk = 21
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"

@@ -1,0 +1,6 @@
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+  <share-target android:targetClass="lu.knaff.alain.share_to_folder.ShareReceiver">
+    <data android:mimeType="*/*" />
+    <category android:name="lu.knaff.alain.share_to_folder.category.TEXT_SHARE_TARGET" />
+  </share-target>
+</shortcuts>

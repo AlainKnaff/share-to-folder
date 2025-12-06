@@ -10,6 +10,9 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.content.pm.ShortcutInfoCompat
+import androidx.core.graphics.drawable.IconCompat
 
 /**
  * This activity receives share requests from other applications
@@ -17,15 +20,58 @@ import androidx.activity.result.contract.ActivityResultContracts
 class ShareReceiver : AppCompatActivity() {
     private val TAG="ShareReceiver"
 
+    fun getLastPathPart(uri:Uri):String? {
+	val filename=uri.getLastPathSegment()
+	if(filename==null)
+	    return null
+	val pos=filename.lastIndexOf('/')
+	if(pos >= 0)
+	    return filename.substring(pos+1)
+	else
+	    return filename
+    }
+
+    fun addOrRefreshShortcut(treeUri:Uri, isNew:Boolean) {
+	if(isNew)
+	    contentResolver
+		.takePersistableUriPermission(treeUri,
+					      Intent.FLAG_GRANT_READ_URI_PERMISSION  or
+					      Intent.FLAG_GRANT_WRITE_URI_PERMISSION );
+	val uriString:String=treeUri!!.toString()
+	var shortLabel=getLastPathPart(treeUri)
+	if(shortLabel==null)
+	    shortLabel="folder"
+	val shortcutInfo =
+	    ShortcutInfoCompat.Builder(applicationContext, uriString)
+	    .setShortLabel(shortLabel)
+	    .setIcon(IconCompat.createWithResource(applicationContext,
+						   R.drawable.ic_launcher_foreground))
+	    .setLongLived(true)
+	    .setCategories(setOf("lu.knaff.alain.share_to_folder.category.TEXT_SHARE_TARGET"))
+	    .setIntent(Intent(Intent.ACTION_DEFAULT))
+	    .build()
+	if(isNew)
+	    ShortcutManagerCompat.addDynamicShortcuts(applicationContext,
+						      listOf(shortcutInfo))
+	ShortcutManagerCompat.pushDynamicShortcut(applicationContext,
+						  shortcutInfo)
+    }
+
     fun processPickDirectory(treeUri:Uri?) {
+	if(treeUri == null) {
+	    // User went back
+	    finish()
+	    return
+	}
+	addOrRefreshShortcut(treeUri,true)
+	saveFileTo(treeUri)
+    }
+
+    fun saveFileTo(treeUri:Uri) {
 	val shareIntent:Intent=getIntent()
 	val srcUri:Uri = shareIntent.getData()!!
-	var filename:String? = srcUri.getLastPathSegment()
-	if(filename != null) {
-	    val pos=filename.lastIndexOf('/')
-	    if(pos >= 0)
-		filename=filename.substring(pos+1)
-	} else {
+	var filename=getLastPathPart(srcUri)
+	if(filename == null) {
 	    filename="file"
 	}
 	var mimeType:String? = shareIntent.type
@@ -33,23 +79,33 @@ class ShareReceiver : AppCompatActivity() {
 	    mimeType="text/plain"
 	val inStream:InputStream =  contentResolver.openInputStream(srcUri)!!
 
-	val dir:DocumentFile = DocumentFile.fromTreeUri(this, treeUri!!)!!
-	val destFile:DocumentFile = dir
-	    .createFile(mimeType!!,filename)!!
+	val destFile:DocumentFile = DocumentFile
+	    .fromTreeUri(this, treeUri)
+	    ?.createFile(mimeType!!,filename)!!
 
-	val destUri:Uri = destFile.getUri()
 	val outStream:OutputStream =
-	    contentResolver.openOutputStream(destUri)!!
-	
+	    contentResolver.openOutputStream(destFile.uri)!!
+
 	// copy input to output
 	inStream.transferTo(outStream);
-
+	inStream.close()
+	outStream.close()
 	finish()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+	super.onCreate(savedInstanceState)
+	val key = intent.getStringExtra(Intent.EXTRA_SHORTCUT_ID)
+	Log.i(TAG, "key="+key)
+	if(key != null) {
+	    val uri=Uri.parse(key)
+	    addOrRefreshShortcut(uri,false)
+	    saveFileTo(uri)
+	} else
+	    launchPicker()
+    }
 
+    fun launchPicker() {
 	val launcher = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) {
 	    result-> processPickDirectory(result)
 	}

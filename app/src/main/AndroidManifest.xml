@@ -21,6 +21,8 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+	    <meta-data android:name="android.app.shortcuts"
+		       android:resource="@xml/shortcuts"/>
         </activity>
 
         <activity
@@ -29,7 +31,7 @@
 	  <intent-filter>
             <action android:name="android.intent.action.SEND" />
             <category android:name="android.intent.category.DEFAULT" />
-            <data android:mimeType="text/plain" />
+            <data android:mimeType="*/*" />
 	  </intent-filter>
 	</activity>
     </application>

@@ -68,13 +68,17 @@ class ShareReceiver : AppCompatActivity() {
     }
 
     fun saveFileTo(treeUri:Uri) {
-	val shareIntent:Intent=getIntent()
-	val srcUri:Uri = shareIntent.getData()!!
-	var filename=getLastPathPart(srcUri)
+	var srcUri:Uri? = intent.getData()
+	if(srcUri==null) {
+	    val o:Any?=intent.extras?.get(Intent.EXTRA_STREAM)
+	    if(o is Uri)
+		srcUri=o
+	}
+	var filename=getLastPathPart(srcUri!!)
 	if(filename == null) {
 	    filename="file"
 	}
-	var mimeType:String? = shareIntent.type
+	var mimeType:String? = intent.type
 	if(mimeType=="null")
 	    mimeType="text/plain"
 	val inStream:InputStream =  contentResolver.openInputStream(srcUri)!!

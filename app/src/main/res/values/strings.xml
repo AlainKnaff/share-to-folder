@@ -13,6 +13,10 @@
     <string name="no">No</string>
     <string name="always">Always</string>
 
+    <!-- main page -->
+    <string name="share_targets_title">Shortcuts to share targets:</string>
+    <string name="remove_preauth">Remove pre-authorization</string>
+
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
         volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus

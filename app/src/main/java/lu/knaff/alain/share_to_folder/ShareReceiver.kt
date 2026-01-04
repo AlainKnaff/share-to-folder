@@ -15,6 +15,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.graphics.drawable.IconCompat
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.text.TextPaint
 
 import androidx.core.net.toUri
 
@@ -51,11 +55,35 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 	var shortLabel=getLastPathPart(treeUri)
 	if(shortLabel==null)
 	    shortLabel="folder"
+
+	val textPaint = TextPaint()
+	textPaint.setTextSize(66f)
+	textPaint.setColor(Color.BLACK);
+	val bits = Bitmap.createBitmap(108, 108, Bitmap.Config.ARGB_8888);
+	val canvas = Canvas(bits)
+
+	try {
+	    val authority = treeUri.authority!!;
+	    val docs=authority.lastIndexOf(".documents")
+	    val idx= if(docs > 0)
+		authority.lastIndexOf('.', docs-1)
+	    else
+		authority.lastIndexOf('.')
+	    val letter = if(idx == -1)
+		authority.substring(0,1)
+	    else
+		authority.substring(idx+1,idx+2)
+	    canvas.drawText(letter.uppercase(), 21f, 87f, textPaint);
+	} catch(e : Exception) {
+	    // if an exception occurs, just don't draw any text...
+	}
+
+	val icon = IconCompat.createWithBitmap(bits)
+
 	val shortcutInfo =
 	    ShortcutInfoCompat.Builder(applicationContext, uriString)
 	    .setShortLabel(shortLabel)
-	    .setIcon(IconCompat.createWithResource(applicationContext,
-						   R.drawable.ic_launcher_foreground))
+	    .setIcon(icon)
 	    .setLongLived(true)
 	    .setCategories(setOf("lu.knaff.alain.share_to_folder.category.TEXT_SHARE_TARGET"))
 	    .setIntent(Intent(Intent.ACTION_DEFAULT))

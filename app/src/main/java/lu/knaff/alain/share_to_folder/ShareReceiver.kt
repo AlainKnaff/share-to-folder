@@ -64,8 +64,8 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 	textPaint.setTextAlign(Paint.Align.CENTER)
 	textPaint.setColor(Color.BLACK);
 	val bits = Bitmap.createBitmap(108, 108, Bitmap.Config.ARGB_8888);
-	canvas.drawCircle(54f,54f,50f, paint)
 	val canvas = Canvas(bits)
+	canvas.drawCircle(54f,54f,50f, paint)
 
 	try {
 	    val authority = treeUri.authority!!;

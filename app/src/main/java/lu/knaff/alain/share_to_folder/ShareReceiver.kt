@@ -3,6 +3,7 @@ package lu.knaff.alain.share_to_folder
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URLDecoder
+import android.os.Build
 
 import android.os.Bundle
 import android.content.Intent
@@ -14,7 +15,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.graphics.drawable.IconCompat
-import android.annotation.TargetApi
+
+import androidx.core.net.toUri
 
 import lu.knaff.alain.share_to_folder.db.TheDatabase
 
@@ -45,7 +47,7 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 		.takePersistableUriPermission(treeUri,
 					      Intent.FLAG_GRANT_READ_URI_PERMISSION  or
 					      Intent.FLAG_GRANT_WRITE_URI_PERMISSION );
-	val uriString:String=treeUri!!.toString()
+	val uriString:String=treeUri.toString()
 	var shortLabel=getLastPathPart(treeUri)
 	if(shortLabel==null)
 	    shortLabel="folder"
@@ -114,9 +116,10 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 	super.onCreate(savedInstanceState)
-	val key =
-	    @TargetApi(29)
+	val key = if(Build.VERSION.SDK_INT >= 29)
 	    intent.getStringExtra(Intent.EXTRA_SHORTCUT_ID)
+	else
+	    null
 	if(key == null) {
 	    launchPicker()
 	    return
@@ -145,9 +148,9 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
     }
 
     fun doSaveFileTo(key: String) {
-	    val uri=Uri.parse(key)
-	    addOrRefreshShortcut(uri,false)
-	    saveFileTo(uri)
+	val uri=key.toUri()
+	addOrRefreshShortcut(uri,false)
+	saveFileTo(uri)
     }
 
     fun launchPicker() {

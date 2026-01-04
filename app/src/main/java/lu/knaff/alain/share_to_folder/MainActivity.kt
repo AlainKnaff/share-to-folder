@@ -25,7 +25,7 @@ import lu.knaff.alain.share_to_folder.db.Dao
 class MainActivity : Activity() {
     private val TAG="MainActivity"
 
-    private fun getDao() : Dao {
+    fun getDao() : Dao {
 	return TheDatabase.getDao(applicationContext)
     }
 

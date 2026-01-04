@@ -60,6 +60,10 @@ android {
         includeInApk = false
         includeInBundle = false
     }
+    lint {
+        checkAllWarnings = true // Checks all lint warnings
+        // warningsAsErrors = true // Treats all warnings as errors
+    }
 }
 
 dependencies {

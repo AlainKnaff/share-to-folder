@@ -17,6 +17,7 @@ import androidx.core.graphics.drawable.IconCompat
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
 import android.text.TextPaint
 
 import androidx.core.net.toUri
@@ -55,10 +56,15 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 	if(shortLabel==null)
 	    shortLabel="folder"
 
+	val paint = Paint()
+	paint.setColor(Color.LTGRAY)
+
 	val textPaint = TextPaint()
 	textPaint.setTextSize(66f)
+	textPaint.setTextAlign(Paint.Align.CENTER)
 	textPaint.setColor(Color.BLACK);
 	val bits = Bitmap.createBitmap(108, 108, Bitmap.Config.ARGB_8888);
+	canvas.drawCircle(54f,54f,50f, paint)
 	val canvas = Canvas(bits)
 
 	try {
@@ -72,7 +78,7 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 		authority.substring(0,1)
 	    else
 		authority.substring(idx+1,idx+2)
-	    canvas.drawText(letter.uppercase(), 21f, 87f, textPaint);
+	    canvas.drawText(letter.uppercase(), 54f, 78f, textPaint);
 	} catch(e : Exception) {
 	    // if an exception occurs, just don't draw any text...
 	}

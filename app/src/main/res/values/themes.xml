@@ -12,12 +12,6 @@
     <item name="android:windowLightStatusBar">?attr/isLightTheme</item>
   </style>
 
-    <style name="Theme.TransparentActivity" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-        <!-- Status bar color. -->
-        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
-        <!-- Customize your theme here. -->
-    </style>
-
     <!--add below code in themes.xml file-->
     <!--below is the style for transparent activity and here we are using no action bar.-->
     <style name="Theme.AppCompat.Translucent" parent="Theme.AppCompat.NoActionBar">

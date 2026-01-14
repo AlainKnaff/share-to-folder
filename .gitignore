@@ -15,3 +15,4 @@ keystore.jks
 README.html
 *~
 .#*
+/app/src/main/icons/icon-big.svg

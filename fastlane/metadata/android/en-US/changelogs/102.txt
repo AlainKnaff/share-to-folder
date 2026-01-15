@@ -1,0 +1,2 @@
+- Fix typo in en-US
+- Provide French translation

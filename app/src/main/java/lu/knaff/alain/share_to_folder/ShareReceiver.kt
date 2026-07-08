@@ -192,9 +192,19 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 
 	if(filename.indexOf('.')==-1) {
 	    // filename contains no dot, append extension according to mime type
-	    val ext: String? = MimeTypeMap
+	    var ext: String? = MimeTypeMap
 		.getSingleton()
 		.getExtensionFromMimeType(mimeType)
+	    if(ext == null) {
+		if(mimeType == "image/*")
+		    ext = "jpg"
+		else if(mimeType == "video/*")
+		    ext = "mp4"
+		else {
+		    Log.i(TAG, "Unknown mime type: "+mimeType)
+		    ext = "bin"
+		}
+	    }
 	    filename = filename + "."+ext
 	}
 

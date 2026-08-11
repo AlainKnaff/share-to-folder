@@ -1,0 +1,1 @@
+handle files shared by Gallery, which neither have an extension on filename, nor an extension with the supplied Mime type

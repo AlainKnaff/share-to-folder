@@ -1,19 +1,18 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.ksp)
 }
 
 android {
     namespace = "lu.knaff.alain.share_to_folder"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "lu.knaff.alain.share_to_folder"
 	// minSdk 24 to avoid v1 signing which causes noisy warnings
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 105
         versionName = "0.1.5"
 

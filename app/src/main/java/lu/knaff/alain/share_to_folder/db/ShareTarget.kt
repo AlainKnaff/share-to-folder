@@ -18,5 +18,6 @@ import androidx.room.ColumnInfo
 data class ShareTarget(
     @PrimaryKey(autoGenerate = true) val uid: Int,
     @ColumnInfo(name = "uri") val uri: String,
-    @ColumnInfo(name = "always") var always: Boolean
+    @ColumnInfo(name = "always") var always: Boolean,
+    @ColumnInfo(name = "subdir_mode", defaultValue = "false") var subdirMode: Boolean
 )

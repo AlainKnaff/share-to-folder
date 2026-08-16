@@ -41,7 +41,7 @@ interface Dao {
     fun getOrCreate(uri: String): ShareTarget {
 	var st = loadByUri(uri)
 	if(st == null) {
-	    st = ShareTarget(0, uri, false)
+	    st = ShareTarget(0, uri, false, false)
 	    insertAll(st)
 	}
 	return st
@@ -54,5 +54,17 @@ interface Dao {
 	    st.always = always
 	    update(st)
 	}
+    }
+
+    @Transaction
+    fun setAlways(st: ShareTarget, always: Boolean) {
+	st.always = always
+	update(st)
+    }
+
+    @Transaction
+    fun setSubdir(st: ShareTarget, subdir: Boolean) {
+	st.subdirMode = subdir
+	update(st)
     }
 }

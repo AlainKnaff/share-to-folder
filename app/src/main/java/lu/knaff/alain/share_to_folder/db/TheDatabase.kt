@@ -13,9 +13,15 @@ You should have received a copy of the GNU General Public License along with thi
 import androidx.room.Room
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.AutoMigration
 import android.content.Context
 
-@Database(entities = [ShareTarget::class], version = 1, exportSchema = true)
+@Database(entities = [ShareTarget::class],
+	  version = 2,
+	  exportSchema = true,
+	  autoMigrations = [
+	      AutoMigration (from = 1, to = 2)
+	  ])
 abstract class TheDatabase : RoomDatabase() {
     abstract fun dao(): Dao
 

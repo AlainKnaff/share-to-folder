@@ -75,7 +75,9 @@ class MainActivity : Activity() {
 	    private val TAG="StfAdapter.ViewHolder"
 	    // val binding = DataBindingUtil.setContentView(view)
 	    val text:TextView = view.findViewById(R.id.text)
-	    val button:Button = view.findViewById(R.id.button)
+	    val rem_preauth:Button = view.findViewById(R.id.rem_preauth)
+	    val act_subdir:Button = view.findViewById(R.id.act_subdir)
+	    val rem_subdir:Button = view.findViewById(R.id.rem_subdir)
 	    val view = view;
 	    public lateinit var shareTarget:ShareTarget
 
@@ -96,11 +98,13 @@ class MainActivity : Activity() {
 	    return ViewHolder(view)
 	}
 
-	private fun restyleHolder(holder: ViewHolder, always: Boolean) {
-	    holder.button.setVisibility(if(always) View.VISIBLE else View.GONE)
+	private fun restyleHolder(holder: ViewHolder, st: ShareTarget) {
+	    holder.rem_preauth.setVisibility(if(st.always) View.VISIBLE else View.GONE)
+	    holder.act_subdir.setVisibility(if(!st.subdirMode) View.VISIBLE else View.GONE)
+	    holder.rem_subdir.setVisibility(if(st.subdirMode) View.VISIBLE else View.GONE)
 	    holder.view.setBackgroundColor(ContextCompat
 					       .getColor(this@MainActivity,
-							 if(always)
+							 if(st.always)
 							     R.color.greenbg
 							 else
 							     R.color.redbg))
@@ -112,11 +116,21 @@ class MainActivity : Activity() {
 	    val shareTarget=shareTargets[position]
 	    holder.text.text=URLDecoder.decode(shareTarget.uri, "UTF-8")
 	    holder.shareTarget=shareTarget
-	    restyleHolder(holder, shareTarget.always)
-	    holder.button.setOnClickListener()
+	    restyleHolder(holder, shareTarget)
+	    holder.rem_preauth.setOnClickListener()
 	    {
-		getDao().setAlways(shareTarget.uri,false)
-		restyleHolder(holder, false)
+		getDao().setAlways(shareTarget,false)
+		restyleHolder(holder, shareTarget)
+	    }
+	    holder.act_subdir.setOnClickListener()
+	    {
+		getDao().setSubdir(shareTarget,true)
+		restyleHolder(holder, shareTarget)
+	    }
+	    holder.rem_subdir.setOnClickListener()
+	    {
+		getDao().setSubdir(shareTarget,false)
+		restyleHolder(holder, shareTarget)
 	    }
 	}
 

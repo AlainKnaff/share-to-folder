@@ -299,7 +299,7 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
         val authority = treeUri.getAuthority();
         val docIdEncoded = treeUri.lastPathSegment
         val docId = Uri.decode(docIdEncoded)
-	return DocumentsContract.buildDocumentUri(authority, docId)
+        return DocumentsContract.buildDocumentUri(authority, docId)
     }
 
     fun launchPicker(uriStr: String?) {

@@ -1,0 +1,1 @@
+- Support for subdir mode: clicking on a shortcut doesn't save the shared directly under it, but instead opens up a file picker to chose a directory where to save starting at the shortcut's location.

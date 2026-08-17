@@ -104,7 +104,7 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
         }
 
         // fallback icon
-val bits = createBitmap(108, 108, Bitmap.Config.ARGB_8888)
+        val bits = createBitmap(108, 108, Bitmap.Config.ARGB_8888)
         val paint = Paint()
         paint.setColor(Color.LTGRAY)
 

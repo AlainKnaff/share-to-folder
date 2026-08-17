@@ -70,9 +70,6 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
             var providerPkg = authority.removeSuffix(".documents")
             return packageManager.getApplicationInfo(providerPkg, 0)
         } catch(e: PackageManager.NameNotFoundException) {
-            // fallback if provider authority name doesn't match
-            // application package
-            /*
             val cps = packageManager
 	        .queryContentProviders(
 	            null,
@@ -83,8 +80,6 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 	        it.authority == authority
             }?.packageName
             return packageManager.getApplicationInfo(packageName!!, 0)
-             */
-            throw RuntimeException("tough luck");
         }
     }
 

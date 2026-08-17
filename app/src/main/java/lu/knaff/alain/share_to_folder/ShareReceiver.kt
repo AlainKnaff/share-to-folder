@@ -27,6 +27,7 @@ import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.graphics.createBitmap
 import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -43,6 +44,9 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 
 import android.provider.DocumentsContract
+
+import android.content.pm.PackageManager
+import android.content.pm.ApplicationInfo 
 
 /**
  * This activity receives share requests from other applications
@@ -61,17 +65,51 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 	    return filename
     }
 
-    fun addOrRefreshShortcut(treeUri:Uri, isNew:Boolean) {
-        if(isNew)
-            contentResolver
-                .takePersistableUriPermission(treeUri,
-                                              Intent.FLAG_GRANT_READ_URI_PERMISSION  or
-                                              Intent.FLAG_GRANT_WRITE_URI_PERMISSION )
-        val uriString:String=treeUri.toString()
-        var shortLabel=getLastPathPart(treeUri)
-        if(shortLabel==null)
-            shortLabel="folder"
+    fun getPackageForAuthority(authority: String) : ApplicationInfo {
+        try {
+            var providerPkg = authority.removeSuffix(".documents")
+            return packageManager.getApplicationInfo(providerPkg, 0)
+        } catch(e: PackageManager.NameNotFoundException) {
+            // fallback if provider authority name doesn't match
+            // application package
+            /*
+            val cps = packageManager
+	        .queryContentProviders(
+	            null,
+	            0,
+	            0
+	        )
+            val packageName = cps.firstOrNull {
+	        it.authority == authority
+            }?.packageName
+            return packageManager.getApplicationInfo(packageName!!, 0)
+             */
+            throw RuntimeException("tough luck");
+        }
+    }
 
+    fun getBitmapForAuthority(authority: String) : Bitmap {
+        try {
+            val appInfo = getPackageForAuthority(authority)
+            val icon = packageManager.getApplicationIcon(appInfo)
+            var bits :Bitmap? = null
+            if(icon is BitmapDrawable) {
+                return icon.bitmap
+            } else {
+                val bits = createBitmap(icon.intrinsicWidth.coerceAtLeast(1),
+                                        icon.intrinsicHeight.coerceAtLeast(1),
+                                        Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bits)
+                icon.setBounds(0, 0, canvas.width, canvas.height)
+                icon.draw(canvas)
+                return bits
+            }
+        } catch (e: Exception) {
+            Log.i(TAG, "Exception while getting icon ",e)
+        }
+
+        // fallback icon
+val bits = createBitmap(108, 108, Bitmap.Config.ARGB_8888)
         val paint = Paint()
         paint.setColor(Color.LTGRAY)
 
@@ -79,12 +117,10 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
         textPaint.setTextSize(66f)
         textPaint.setTextAlign(Paint.Align.CENTER)
         textPaint.setColor(Color.BLACK)
-        val bits = createBitmap(108, 108, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bits)
         canvas.drawCircle(54f,54f,50f, paint)
 
         try {
-            val authority = treeUri.authority!!
             val docs=authority.lastIndexOf(".documents")
             val idx= if(docs > 0)
                 authority.lastIndexOf('.', docs-1)
@@ -98,6 +134,22 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
         } catch(e : Exception) {
             // if an exception occurs, just don't draw any text...
         }
+        return bits
+    }
+    
+    fun addOrRefreshShortcut(treeUri:Uri, isNew:Boolean) {
+        if(isNew)
+            contentResolver
+                .takePersistableUriPermission(treeUri,
+                                              Intent.FLAG_GRANT_READ_URI_PERMISSION  or
+                                              Intent.FLAG_GRANT_WRITE_URI_PERMISSION )
+        val uriString:String=treeUri.toString()
+        var shortLabel=getLastPathPart(treeUri)
+        if(shortLabel==null)
+            shortLabel="folder"
+
+        val authority = treeUri.authority!!
+        var bits = getBitmapForAuthority(authority)
 
         val icon = IconCompat.createWithBitmap(bits)
 
@@ -252,7 +304,7 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
         else
             null
         if(key == null) {
-            launchPicker(null)
+            launchPicker()
             return
         }
 
@@ -289,12 +341,18 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
     }
 
     val launcher = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) {
+        result-> processPickDirectory(result, true)
+    }
+
+    fun launchPicker() {
+        launcher.launch(null)
+    }
+
+    val launcherMakeNoShortcut = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) {
         result-> processPickDirectory(result, false)
     }
 
-    fun uriStrToDocumentId(uriStr: String?): Uri? {
-        if(uriStr == null)
-            return null
+    fun uriStrToDocumentId(uriStr: String): Uri {
         val treeUri = uriStr.toUri()
         val authority = treeUri.getAuthority();
         val docIdEncoded = treeUri.lastPathSegment
@@ -302,7 +360,7 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
         return DocumentsContract.buildDocumentUri(authority, docId)
     }
 
-    fun launchPicker(uriStr: String?) {
-        launcher.launch(uriStrToDocumentId(uriStr))
+    fun launchPicker(uriStr: String) {
+        launcherMakeNoShortcut.launch(uriStrToDocumentId(uriStr))
     }
 }

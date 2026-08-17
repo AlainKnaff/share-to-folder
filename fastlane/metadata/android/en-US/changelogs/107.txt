@@ -1,0 +1,2 @@
+- Still create shortcuts when browsing from app's main icon (only skip creating them when browsing from an existing shortcut)
+- Use provider authority application's actual icon, rather than making our own. Still not ideal, as that is an application-wide icon, and not necessarily one that corresponds to the specific root that we are dealing with

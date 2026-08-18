@@ -63,8 +63,9 @@ interface Dao {
     }
 
     @Transaction
-    fun setSubdir(st: ShareTarget, subdir: Boolean) {
-	st.subdirMode = subdir
+    fun toggleSubdir(st: ShareTarget) {
+	st.subdirMode = !st.subdirMode
 	update(st)
     }
+
 }

@@ -80,8 +80,7 @@ class MainActivity : Activity() {
 	    val text:TextView = view.findViewById(R.id.text)
 	    val icon:ImageView = view.findViewById(R.id.icon)
 	    val rem_preauth:Button = view.findViewById(R.id.rem_preauth)
-	    val act_subdir:Button = view.findViewById(R.id.act_subdir)
-	    val rem_subdir:Button = view.findViewById(R.id.rem_subdir)
+	    val subdir:Button = view.findViewById(R.id.subdir)
 	    val view = view;
 	    public lateinit var shareTarget:ShareTarget
 
@@ -104,8 +103,10 @@ class MainActivity : Activity() {
 
 	private fun restyleHolder(holder: ViewHolder, st: ShareTarget) {
 	    holder.rem_preauth.setVisibility(if(st.always) View.VISIBLE else View.GONE)
-	    holder.act_subdir.setVisibility(if(!st.subdirMode) View.VISIBLE else View.GONE)
-	    holder.rem_subdir.setVisibility(if(st.subdirMode) View.VISIBLE else View.GONE)
+	    holder.subdir.setText(if(st.subdirMode)
+				      R.string.subdir_on
+				  else
+				      R.string.subdir_off)
 	    holder.view.setBackgroundColor(ContextCompat
 					       .getColor(this@MainActivity,
 							 if(st.always)
@@ -135,14 +136,9 @@ class MainActivity : Activity() {
 		getDao().setAlways(shareTarget,false)
 		restyleHolder(holder, shareTarget)
 	    }
-	    holder.act_subdir.setOnClickListener()
+	    holder.subdir.setOnClickListener()
 	    {
-		getDao().setSubdir(shareTarget,true)
-		restyleHolder(holder, shareTarget)
-	    }
-	    holder.rem_subdir.setOnClickListener()
-	    {
-		getDao().setSubdir(shareTarget,false)
+		getDao().toggleSubdir(shareTarget)
 		restyleHolder(holder, shareTarget)
 	    }
 	}

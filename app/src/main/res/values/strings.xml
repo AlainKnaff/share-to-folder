@@ -12,7 +12,7 @@
     <!-- main page -->
     <string name="share_targets_title">Shortcuts to share targets:</string>
     <string name="remove_preauth">Remove pre-auth</string>
-    <string name="act_subdir">subdir mode \u274C</string>
-    <string name="rem_subdir">subdir mode \u2705</string>
+    <string name="subdir_off">subdir mode \u274C</string>
+    <string name="subdir_on">subdir mode \u2705</string>
     <string name="iconContentDesc">provider authority</string>
 </resources>

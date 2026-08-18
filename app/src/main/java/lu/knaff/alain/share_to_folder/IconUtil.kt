@@ -14,35 +14,35 @@ import android.content.Context
 
 class IconUtil {
     companion object {
-	private val TAG="IconUtil"
+        private val TAG="IconUtil"
 
-	fun getPackageForAuthority(ctx: Context,
-				   authority: String) : ApplicationInfo {
+        fun getPackageForAuthority(ctx: Context,
+                                   authority: String) : ApplicationInfo {
             try {
-		var providerPkg = authority.removeSuffix(".documents")
-		return ctx.packageManager.getApplicationInfo(providerPkg, 0)
+                var providerPkg = authority.removeSuffix(".documents")
+                return ctx.packageManager.getApplicationInfo(providerPkg, 0)
             } catch(e: PackageManager.NameNotFoundException) {
-		val cps = ctx.packageManager
-	            .queryContentProviders(
-			null,
-			0,
-			0
-	            )
-		val packageName = cps.firstOrNull {
-	            it.authority == authority
-		}?.packageName
-		return ctx.packageManager.getApplicationInfo(packageName!!, 0)
+                val cps = ctx.packageManager
+                    .queryContentProviders(
+                        null,
+                        0,
+                        0
+                    )
+                val packageName = cps.firstOrNull {
+                    it.authority == authority
+                }?.packageName
+                return ctx.packageManager.getApplicationInfo(packageName!!, 0)
             }
-	}
+        }
 
-	fun getBitmapForAuthority(ctx: Context, authority: String) : Bitmap {
+        fun getBitmapForAuthority(ctx: Context, authority: String) : Bitmap {
             try {
-		val appInfo = getPackageForAuthority(ctx, authority)
-		val icon = ctx.packageManager.getApplicationIcon(appInfo)
-		var bits :Bitmap? = null
-		if(icon is BitmapDrawable) {
+                val appInfo = getPackageForAuthority(ctx, authority)
+                val icon = ctx.packageManager.getApplicationIcon(appInfo)
+                var bits :Bitmap? = null
+                if(icon is BitmapDrawable) {
                     return icon.bitmap
-		} else {
+                } else {
                     val bits = createBitmap(icon.intrinsicWidth.coerceAtLeast(1),
                                             icon.intrinsicHeight.coerceAtLeast(1),
                                             Bitmap.Config.ARGB_8888)
@@ -50,9 +50,9 @@ class IconUtil {
                     icon.setBounds(0, 0, canvas.width, canvas.height)
                     icon.draw(canvas)
                     return bits
-		}
+                }
             } catch (e: Exception) {
-		Log.i(TAG, "Exception while getting icon ",e)
+                Log.i(TAG, "Exception while getting icon ",e)
             }
 
             // fallback icon
@@ -68,20 +68,20 @@ class IconUtil {
             canvas.drawCircle(54f,54f,50f, paint)
 
             try {
-		val docs=authority.lastIndexOf(".documents")
-		val idx= if(docs > 0)
+                val docs=authority.lastIndexOf(".documents")
+                val idx= if(docs > 0)
                     authority.lastIndexOf('.', docs-1)
-		else
+                else
                     authority.lastIndexOf('.')
-		val letter = if(idx == -1)
+                val letter = if(idx == -1)
                     authority.substring(0,1)
-		else
+                else
                     authority.substring(idx+1,idx+2)
-		canvas.drawText(letter.uppercase(), 54f, 78f, textPaint)
+                canvas.drawText(letter.uppercase(), 54f, 78f, textPaint)
             } catch(e : Exception) {
-		// if an exception occurs, just don't draw any text...
+                // if an exception occurs, just don't draw any text...
             }
             return bits
-	}
+        }
     }
 }

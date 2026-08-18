@@ -1,0 +1,1 @@
+Break up treeUri into provider's authority and documentUri for display. Display authority as an icon

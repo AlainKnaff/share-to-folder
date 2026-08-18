@@ -12,15 +12,34 @@
     android:paddingBottom="4dp"
     >
 
+    <ImageView
+	android:id="@+id/icon"
+	android:layout_width="54dp"
+	android:layout_height="54dp"
+	android:layout_marginTop="5dp"
+	android:scaleType="fitCenter"
+	android:adjustViewBounds="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+	android:src="@drawable/ic_launcher_foreground"
+	android:contentDescription="@string/iconContentDesc" />
+
     <TextView
-        android:id="@+id/text"
+	android:id="@+id/text"
 	android:textIsSelectable="true"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:focusable="true"
         android:clickable="true"
-	android:gravity="top"
-        app:layout_constraintStart_toStartOf="parent"
+	android:gravity="end"
+
+	android:breakStrategy="simple"
+	android:hyphenationFrequency="none"
+	android:maxLines="4"
+	android:ellipsize="end"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/icon"
         app:layout_constraintTop_toTopOf="parent"
 	android:layout_marginTop="0dp"
 	/>

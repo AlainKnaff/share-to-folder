@@ -16,15 +16,18 @@ import android.app.Activity
 import android.os.Bundle
 import android.view.View
 import android.content.Intent
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import android.widget.ImageView
 import android.annotation.SuppressLint
 
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 
 import lu.knaff.alain.share_to_folder.db.TheDatabase
 import lu.knaff.alain.share_to_folder.db.ShareTarget
@@ -75,6 +78,7 @@ class MainActivity : Activity() {
 	    private val TAG="StfAdapter.ViewHolder"
 	    // val binding = DataBindingUtil.setContentView(view)
 	    val text:TextView = view.findViewById(R.id.text)
+	    val icon:ImageView = view.findViewById(R.id.icon)
 	    val rem_preauth:Button = view.findViewById(R.id.rem_preauth)
 	    val act_subdir:Button = view.findViewById(R.id.act_subdir)
 	    val rem_subdir:Button = view.findViewById(R.id.rem_subdir)
@@ -114,7 +118,16 @@ class MainActivity : Activity() {
 	override fun onBindViewHolder(holder: ViewHolder, position: Int)
 	{
 	    val shareTarget=shareTargets[position]
-	    holder.text.text=URLDecoder.decode(shareTarget.uri, "UTF-8")
+
+	    val treeUri = shareTarget.uri.toUri()
+	    val authority = treeUri.getAuthority()!!;
+	    val docIdEncoded = treeUri.lastPathSegment
+	    val docId = Uri.decode(docIdEncoded)
+
+	    holder.text.text=URLDecoder.decode(docId, "UTF-8")
+	    holder.icon.setImageBitmap(IconUtil.getBitmapForAuthority(this@MainActivity,
+								      authority))
+	    holder.icon.setContentDescription(authority)
 	    holder.shareTarget=shareTarget
 	    restyleHolder(holder, shareTarget)
 	    holder.rem_preauth.setOnClickListener()

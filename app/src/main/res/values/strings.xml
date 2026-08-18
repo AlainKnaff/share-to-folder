@@ -11,7 +11,8 @@
 
     <!-- main page -->
     <string name="share_targets_title">Shortcuts to share targets:</string>
-    <string name="remove_preauth">Remove pre-authorization</string>
+    <string name="remove_preauth">Remove pre-auth</string>
     <string name="act_subdir">Enable subdir mode</string>
     <string name="rem_subdir">Disable subdir mode</string>
+    <string name="iconContentDesc">provider authority</string>
 </resources>

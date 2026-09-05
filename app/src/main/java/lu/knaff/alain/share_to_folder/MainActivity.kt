@@ -47,7 +47,7 @@ class MainActivity : Activity() {
         setContentView(R.layout.main)
 
         val recyclerView=findViewById<RecyclerView>(R.id.share_targets)
-        recyclerView.adapter=StfAdapter(this)
+        recyclerView.adapter=StfAdapter()
         recyclerView.layoutManager=LinearLayoutManager(this)
     }
 
@@ -58,7 +58,7 @@ class MainActivity : Activity() {
              as StfAdapter).updateData()
     }
 
-    inner class StfAdapter(private val activity:Activity):RecyclerView.Adapter<StfAdapter.ViewHolder>()
+    inner class StfAdapter():RecyclerView.Adapter<StfAdapter.ViewHolder>()
     {
         private val TAG="StfAdapter"
         private var shareTargets = getDao().getAll()

@@ -45,7 +45,7 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
     private val TAG="ShareReceiver"
 
     fun getLastPathPart(uri:Uri?):String? {
-	val filename=uri?.getLastPathSegment()
+	val filename=uri?.lastPathSegment
 	if(filename==null)
 	    return null
 	val pos=filename.lastIndexOf('/')
@@ -135,7 +135,7 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
     }
 
     fun saveOneFileTo(treeUri:Uri) {
-        var srcUri:Uri? = intent.getData()
+        var srcUri:Uri? = intent.data
         if(srcUri==null) {
             val o:Any?=
                 @Suppress("DEPRECATION") intent.getParcelableExtra(Intent.EXTRA_STREAM)
@@ -272,7 +272,7 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 
     fun uriStrToDocumentId(uriStr: String): Uri {
         val treeUri = uriStr.toUri()
-        val authority = treeUri.getAuthority();
+        val authority = treeUri.authority
         val docIdEncoded = treeUri.lastPathSegment
         val docId = Uri.decode(docIdEncoded)
         return DocumentsContract.buildDocumentUri(authority, docId)

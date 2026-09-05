@@ -1,14 +1,14 @@
 package lu.knaff.alain.share_to_folder
 
 /* This file is part of share-to-folder, an Android app to allow saving shared items to a folder
- Copyright (C) 2025,2026 Alain Knaff
+   Copyright (C) 2025,2026 Alain Knaff
 
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+   This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+   This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
-*/
+   You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
 
 import java.net.URLDecoder
 
@@ -38,113 +38,113 @@ class MainActivity : Activity() {
     private val TAG="MainActivity"
 
     fun getDao() : Dao {
-	return TheDatabase.getDao(applicationContext)
+        return TheDatabase.getDao(applicationContext)
     }
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
-	super.onCreate(savedInstanceState)
-	setContentView(R.layout.main)
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.main)
 
-	val recyclerView=findViewById<RecyclerView>(R.id.share_targets)
-	recyclerView.adapter=StfAdapter(this)
-	recyclerView.layoutManager=LinearLayoutManager(this)
+        val recyclerView=findViewById<RecyclerView>(R.id.share_targets)
+        recyclerView.adapter=StfAdapter(this)
+        recyclerView.layoutManager=LinearLayoutManager(this)
     }
 
     override fun onResume()
     {
-	super.onResume()
-	(findViewById<RecyclerView>(R.id.share_targets).adapter
-	     as StfAdapter).updateData()
+        super.onResume()
+        (findViewById<RecyclerView>(R.id.share_targets).adapter
+             as StfAdapter).updateData()
     }
 
     inner class StfAdapter(private val activity:Activity):RecyclerView.Adapter<StfAdapter.ViewHolder>()
     {
-	private val TAG="StfAdapter"
-	private var shareTargets = getDao().getAll()
-	inner class ViewHolder(view:View):RecyclerView.ViewHolder(view),
-					  View.OnClickListener
-	{
-	    private val TAG="StfAdapter.ViewHolder"
-	    // val binding = DataBindingUtil.setContentView(view)
-	    val text:TextView = view.findViewById(R.id.text)
-	    val icon:ImageView = view.findViewById(R.id.icon)
-	    val rem_preauth:Button = view.findViewById(R.id.rem_preauth)
-	    val subdir:Button = view.findViewById(R.id.subdir)
-	    val view = view;
-	    public lateinit var shareTarget:ShareTarget
+        private val TAG="StfAdapter"
+        private var shareTargets = getDao().getAll()
+        inner class ViewHolder(view:View):RecyclerView.ViewHolder(view),
+                                          View.OnClickListener
+        {
+            private val TAG="StfAdapter.ViewHolder"
+            // val binding = DataBindingUtil.setContentView(view)
+            val text:TextView = view.findViewById(R.id.text)
+            val icon:ImageView = view.findViewById(R.id.icon)
+            val rem_preauth:Button = view.findViewById(R.id.rem_preauth)
+            val subdir:Button = view.findViewById(R.id.subdir)
+            val view = view
+            lateinit var shareTarget:ShareTarget
 
-	    init {
-		view.setOnClickListener(this)
-		text.setOnClickListener(this)
-	    }
+            init {
+                view.setOnClickListener(this)
+                text.setOnClickListener(this)
+            }
 
-	    override fun onClick(view: View)
-	    {
-	    }
-	}
+            override fun onClick(view: View)
+            {
+            }
+        }
 
-	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder
-	{
-	    val view=LayoutInflater.from(parent.context).inflate(R.layout.share_target,parent,false)
-	    return ViewHolder(view)
-	}
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder
+        {
+            val view=LayoutInflater.from(parent.context).inflate(R.layout.share_target,parent,false)
+            return ViewHolder(view)
+        }
 
-	private fun restyleHolder(holder: ViewHolder, st: ShareTarget) {
-	    holder.rem_preauth.setVisibility(if(st.always) View.VISIBLE else View.GONE)
-	    holder.subdir.setText(if(st.subdirMode)
-				      R.string.subdir_on
-				  else
-				      R.string.subdir_off)
-	    holder.view.setBackgroundColor(ContextCompat
-					       .getColor(this@MainActivity,
-							 if(st.always)
-							     R.color.greenbg
-							 else
-							     R.color.redbg))
+        private fun restyleHolder(holder: ViewHolder, st: ShareTarget) {
+            holder.rem_preauth.visibility = if(st.always) View.VISIBLE else View.GONE
+            holder.subdir.setText(if(st.subdirMode)
+                                      R.string.subdir_on
+                                  else
+                                      R.string.subdir_off)
+            holder.view.setBackgroundColor(ContextCompat
+                                               .getColor(this@MainActivity,
+                                                         if(st.always)
+                                                             R.color.greenbg
+                                                         else
+                                                             R.color.redbg))
 
-	}
+        }
 
-	override fun onBindViewHolder(holder: ViewHolder, position: Int)
-	{
-	    val shareTarget=shareTargets[position]
+        override fun onBindViewHolder(holder: ViewHolder, position: Int)
+        {
+            val shareTarget=shareTargets[position]
 
-	    val treeUri = shareTarget.uri.toUri()
-	    val authority = treeUri.getAuthority()!!;
-	    val docIdEncoded = treeUri.lastPathSegment
-	    val docId = Uri.decode(docIdEncoded)
+            val treeUri = shareTarget.uri.toUri()
+            val authority = treeUri.authority!!
+            val docIdEncoded = treeUri.lastPathSegment
+            val docId = Uri.decode(docIdEncoded)
 
-	    holder.text.text=URLDecoder.decode(docId, "UTF-8")
-	    holder.icon.setImageBitmap(IconUtil.getBitmapForAuthority(this@MainActivity,
-								      authority))
-	    holder.icon.setContentDescription(authority)
-	    holder.shareTarget=shareTarget
-	    restyleHolder(holder, shareTarget)
-	    holder.rem_preauth.setOnClickListener()
-	    {
-		getDao().setAlways(shareTarget,false)
-		restyleHolder(holder, shareTarget)
-	    }
-	    holder.subdir.setOnClickListener()
-	    {
-		getDao().toggleSubdir(shareTarget)
-		restyleHolder(holder, shareTarget)
-	    }
-	}
+            holder.text.text=URLDecoder.decode(docId, "UTF-8")
+            holder.icon.setImageBitmap(IconUtil.getBitmapForAuthority(this@MainActivity,
+                                                                      authority))
+            holder.icon.contentDescription = authority
+            holder.shareTarget=shareTarget
+            restyleHolder(holder, shareTarget)
+            holder.rem_preauth.setOnClickListener()
+            {
+                getDao().setAlways(shareTarget,false)
+                restyleHolder(holder, shareTarget)
+            }
+            holder.subdir.setOnClickListener()
+            {
+                getDao().toggleSubdir(shareTarget)
+                restyleHolder(holder, shareTarget)
+            }
+        }
 
-	override fun getItemCount(): Int
-	{
-	    return shareTargets.size
-	}
+        override fun getItemCount(): Int
+        {
+            return shareTargets.size
+        }
 
-	fun updateData()
-	{
-	    shareTargets=getDao().getAll()
-	    @SuppressLint("NotifyDataSetChanged")
-	    // not a huge list, and sometimes we cannot indeed
-	    // describe which position has changed exactly, such as
-	    // when *adding* a new item
-	    notifyDataSetChanged()
-	}
+        fun updateData()
+        {
+            shareTargets=getDao().getAll()
+            @SuppressLint("NotifyDataSetChanged")
+            // not a huge list, and sometimes we cannot indeed
+            // describe which position has changed exactly, such as
+            // when *adding* a new item
+            notifyDataSetChanged()
+        }
     }
 }

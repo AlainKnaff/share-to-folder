@@ -58,12 +58,12 @@ class IconUtil {
             // fallback icon
             val bits = createBitmap(108, 108, Bitmap.Config.ARGB_8888)
             val paint = Paint()
-            paint.setColor(Color.LTGRAY)
+            paint.color = Color.LTGRAY
 
             val textPaint = TextPaint()
-            textPaint.setTextSize(66f)
-            textPaint.setTextAlign(Paint.Align.CENTER)
-            textPaint.setColor(Color.BLACK)
+            textPaint.textSize = 66f
+            textPaint.textAlign = Paint.Align.CENTER
+            textPaint.color = Color.BLACK
             val canvas = Canvas(bits)
             canvas.drawCircle(54f,54f,50f, paint)
 

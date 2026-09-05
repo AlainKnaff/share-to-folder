@@ -15,7 +15,6 @@ import java.net.URLDecoder
 import android.app.Activity
 import android.os.Bundle
 import android.view.View
-import android.content.Intent
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -52,15 +51,6 @@ class MainActivity : Activity() {
 	recyclerView.layoutManager=LinearLayoutManager(this)
     }
 
-    /*
-    fun editShareTarget(view:View, shareTarget:ShareTarget)
-    {
-	val intent:Intent = Intent(this, AuthenticationActivity::class.java)
-	intent.putExtra(DBHandler.ID_COL, shareTarget.id)
-	startActivity(intent)
-    }
-    */
-
     override fun onResume()
     {
 	super.onResume()
@@ -91,7 +81,6 @@ class MainActivity : Activity() {
 
 	    override fun onClick(view: View)
 	    {
-		// editShareTarget(view,shareTarget)
 	    }
 	}
 

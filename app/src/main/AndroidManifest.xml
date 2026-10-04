@@ -8,6 +8,9 @@
         <package android:name="com.android.providers.media.documents" />
         <package android:name="lu.knaff.alain.sftp.documents" />
     </queries>
+    <uses-permission
+	android:name="${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+	tools:node="remove" />
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"

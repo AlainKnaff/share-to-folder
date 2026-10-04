@@ -1,0 +1,1 @@
+If persistable permission to a folder lost, drop back to subdir mode to acquire it again

@@ -55,12 +55,14 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
 	    return filename
     }
 
+    fun persistPerm(treeUri:Uri) {
+        contentResolver
+            .takePersistableUriPermission(treeUri,
+                                          Intent.FLAG_GRANT_READ_URI_PERMISSION  or
+                                          Intent.FLAG_GRANT_WRITE_URI_PERMISSION )
+    }
+
     fun addOrRefreshShortcut(treeUri:Uri, isNew:Boolean) {
-        if(isNew)
-            contentResolver
-                .takePersistableUriPermission(treeUri,
-                                              Intent.FLAG_GRANT_READ_URI_PERMISSION  or
-                                              Intent.FLAG_GRANT_WRITE_URI_PERMISSION )
         val uriString:String=treeUri.toString()
         var shortLabel=getLastPathPart(treeUri)
         if(shortLabel==null)
@@ -86,15 +88,19 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
                                                   shortcutInfo)
     }
 
-    fun processPickDirectory(treeUri:Uri?, addShortcut: Boolean) {
+    fun processPickDirectory(treeUri:Uri?,
+                             addShortcut: Boolean,
+                             persistPerm: Boolean) {
         if(treeUri == null) {
             // User went back
             finish()
             return
         }
+        if(persistPerm)
+            persistPerm(treeUri)
         if(addShortcut)
             addOrRefreshShortcut(treeUri, true)
-        saveFileTo(treeUri)
+        saveFileTo(null, treeUri)
         TheDatabase
             .getDao(applicationContext)
             .getOrCreate(treeUri.toString())
@@ -112,11 +118,24 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
         }
     }
 
-    fun saveFileTo(treeUri:Uri) {
+    fun saveFileTo(key: String?, treeUri:Uri) {
         launch {
             try {
                 if(intent.action == Intent.ACTION_SEND) {
-                    saveOneFileTo(treeUri)
+                    try {
+                        saveOneFileTo(treeUri)
+                    } catch(e: SecurityException) {
+                        if(key != null) {
+                            // we somehow lost our persistable permission
+                            // just fall back on launching a picker
+                            runOnUiThread { launchPicker(key, true) }
+                            return@launch
+                        } else {
+                            val fnf = FileNotFoundException("Not allowed to create file")
+                            fnf.initCause(e)
+                            throw fnf
+                        }
+                    }
                 } else if(intent.action == Intent.ACTION_SEND_MULTIPLE) {
                     saveMultipleFilesTo(treeUri)
                 } else {
@@ -187,11 +206,15 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
         if(directory==null)
             throw FileNotFoundException("Could not open directory "+treeUri)
 
-        val destFile = directory.createFile(mimeType,filename)
-        if(destFile==null)
+        val destUri = DocumentsContract.createDocument(
+            contentResolver,
+            directory.uri,
+            mimeType,
+            filename)
+        if(destUri==null)
             throw FileNotFoundException("Could not create file "+filename)
 
-        val outStream = contentResolver.openOutputStream(destFile.uri)
+        val outStream = contentResolver.openOutputStream(destUri)
         if(outStream == null)
             throw FileNotFoundException("Could not create output stream for "+
                                             filename)
@@ -229,7 +252,7 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
         val dao = TheDatabase.getDao(applicationContext)
         val st = dao.getOrCreate(key)
         if(st.subdirMode) {
-            launchPicker(key)
+            launchPicker(key, false)
             return
         }
         if(!st.always) {
@@ -255,11 +278,11 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
     fun doSaveFileTo(key: String) {
         val uri=key.toUri()
         addOrRefreshShortcut(uri,false)
-        saveFileTo(uri)
+        saveFileTo(key, uri)
     }
 
     val launcher = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) {
-        result-> processPickDirectory(result, true)
+        result-> processPickDirectory(result, true, true)
     }
 
     fun launchPicker() {
@@ -267,7 +290,11 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
     }
 
     val launcherMakeNoShortcut = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) {
-        result-> processPickDirectory(result, false)
+        result-> processPickDirectory(result, false, false)
+    }
+
+    val launcherPersistPerm = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) {
+        result-> processPickDirectory(result, false, true)
     }
 
     fun uriStrToDocumentId(uriStr: String): Uri {
@@ -278,7 +305,10 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
         return DocumentsContract.buildDocumentUri(authority, docId)
     }
 
-    fun launchPicker(uriStr: String) {
-        launcherMakeNoShortcut.launch(uriStrToDocumentId(uriStr))
+    fun launchPicker(uriStr: String, makeShortCut: Boolean) {
+        if(makeShortCut)
+            launcherPersistPerm.launch(uriStrToDocumentId(uriStr))
+        else
+            launcherMakeNoShortcut.launch(uriStrToDocumentId(uriStr))
     }
 }

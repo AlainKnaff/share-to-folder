@@ -26,6 +26,7 @@ import android.annotation.SuppressLint
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 
@@ -185,8 +186,12 @@ class MainActivity : Activity() {
         }
 
         fun removeAt(position: Int) {
-           var shareTarget=shareTargets[position]
+            var shareTarget=shareTargets[position]
             getDao().delete(shareTarget)
+            ShortcutManagerCompat.removeDynamicShortcuts(
+                applicationContext,
+                listOf(shareTarget.uri)
+            )
             shareTargets.removeAt(position)
             notifyItemRemoved(position)
         }

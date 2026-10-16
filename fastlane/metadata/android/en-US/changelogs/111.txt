@@ -1,0 +1,2 @@
+- In administrative view, sort share targets by Url
+- Allow to delete share targets (remove Pre-auth and subdir mode first if needed)

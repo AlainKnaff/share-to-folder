@@ -13,8 +13,8 @@ android {
 	// minSdk 24 to avoid v1 signing which causes noisy warnings
         minSdk = 24
         targetSdk = 37
-        versionCode = 110
-        versionName = "0.1.10"
+        versionCode = 111
+        versionName = "0.1.11"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

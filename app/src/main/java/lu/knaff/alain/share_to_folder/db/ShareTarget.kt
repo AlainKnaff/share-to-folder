@@ -20,4 +20,9 @@ data class ShareTarget(
     @ColumnInfo(name = "uri") val uri: String,
     @ColumnInfo(name = "always") var always: Boolean,
     @ColumnInfo(name = "subdir_mode", defaultValue = "false") var subdirMode: Boolean
-)
+) {
+    fun isLocked() : Boolean
+    {
+        return subdirMode || always; // cannot delete items which have subdirMode or always
+    }
+}

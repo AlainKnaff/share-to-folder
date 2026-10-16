@@ -19,7 +19,7 @@ import androidx.room.Transaction
 
 @Dao
 interface Dao {
-    @Query("SELECT * FROM share_target")
+    @Query("SELECT * FROM share_target ORDER BY uri")
     fun getAll(): MutableList<ShareTarget>
 
     @Query("SELECT * FROM share_target WHERE uri = :uri")
@@ -35,7 +35,7 @@ interface Dao {
     fun update(target: ShareTarget)
 
     @Delete
-    fun delete(user: ShareTarget)
+    fun delete(target: ShareTarget)
 
     @Transaction
     fun getOrCreate(uri: String): ShareTarget {

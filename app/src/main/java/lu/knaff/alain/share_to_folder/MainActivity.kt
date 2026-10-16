@@ -25,6 +25,7 @@ import android.annotation.SuppressLint
 
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 
@@ -41,14 +42,50 @@ class MainActivity : Activity() {
         return TheDatabase.getDao(applicationContext)
     }
 
+    lateinit var adapter: StfAdapter;
+
+    val callback = object : ItemTouchHelper.SimpleCallback(
+                                0, // No drag-and-drop
+                                ItemTouchHelper.RIGHT
+                            ) {
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean = false
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            val position = viewHolder.bindingAdapterPosition
+            if (position != RecyclerView.NO_POSITION) {
+                adapter.removeAt(position)
+            }
+        }
+
+        override fun getSwipeDirs(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder
+        ): Int {
+            val position = viewHolder.bindingAdapterPosition
+            if (position == RecyclerView.NO_POSITION) return 0
+
+            return if (adapter.shareTargets[position].isLocked()) {
+                0
+            } else {
+                super.getSwipeDirs(recyclerView, viewHolder)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main)
 
         val recyclerView=findViewById<RecyclerView>(R.id.share_targets)
-        recyclerView.adapter=StfAdapter()
+        adapter=StfAdapter()
+        recyclerView.adapter=adapter
         recyclerView.layoutManager=LinearLayoutManager(this)
+        ItemTouchHelper(callback).attachToRecyclerView(recyclerView)
     }
 
     override fun onResume()
@@ -61,7 +98,7 @@ class MainActivity : Activity() {
     inner class StfAdapter():RecyclerView.Adapter<StfAdapter.ViewHolder>()
     {
         private val TAG="StfAdapter"
-        private var shareTargets = getDao().getAll()
+        var shareTargets = getDao().getAll()
         inner class ViewHolder(view:View):RecyclerView.ViewHolder(view),
                                           View.OnClickListener
         {
@@ -145,6 +182,13 @@ class MainActivity : Activity() {
             // describe which position has changed exactly, such as
             // when *adding* a new item
             notifyDataSetChanged()
+        }
+
+        fun removeAt(position: Int) {
+           var shareTarget=shareTargets[position]
+            getDao().delete(shareTarget)
+            shareTargets.removeAt(position)
+            notifyItemRemoved(position)
         }
     }
 }

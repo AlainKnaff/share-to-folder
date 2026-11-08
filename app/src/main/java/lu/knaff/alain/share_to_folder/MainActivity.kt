@@ -217,7 +217,10 @@ class MainActivity : ComponentActivity() {
 
         fun removeAt(position: Int) {
             var shareTarget=shareTargets[position]
+            var icon = IconUtil.getIconFile(this@MainActivity,
+                                            shareTarget.uid, false)
             getDao().delete(shareTarget)
+            icon.delete()
             ShortcutManagerCompat.removeDynamicShortcuts(
                 applicationContext,
                 listOf(shareTarget.uri)

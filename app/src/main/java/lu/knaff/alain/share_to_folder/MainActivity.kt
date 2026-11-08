@@ -126,7 +126,7 @@ class MainActivity : ComponentActivity() {
 
             override fun onClick(view: View) {
             }
-            
+
             fun iconMenu(view: View) {
                 val position = bindingAdapterPosition
                 if (position == RecyclerView.NO_POSITION)
@@ -233,7 +233,7 @@ class MainActivity : ComponentActivity() {
             notifyItemChanged(position)
             ShareReceiver.addOrRefreshShortcut(applicationContext, item, false);
         }
-        
+
         private val uploadIcon =
             registerForActivityResult(ActivityResultContracts.OpenDocument()) {
                 uri ->

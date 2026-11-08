@@ -15,4 +15,9 @@
     <string name="subdir_off">subdir mode \u274C</string>
     <string name="subdir_on">subdir mode \u2705</string>
     <string name="iconContentDesc">provider authority</string>
+
+    <!-- menu -->
+    <string name="set_custom_icon">Set custom icon</string>
+    <string name="clear_custom_icon">Clear custom icon</string>
+    
 </resources>

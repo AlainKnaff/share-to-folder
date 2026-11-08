@@ -16,6 +16,7 @@ import android.os.Build
 
 import android.util.Log
 import android.os.Bundle
+import android.content.Context
 import android.content.Intent
 import android.app.AlertDialog
 import android.net.Uri
@@ -30,6 +31,7 @@ import android.webkit.MimeTypeMap
 
 import androidx.core.net.toUri
 
+import lu.knaff.alain.share_to_folder.db.ShareTarget
 import lu.knaff.alain.share_to_folder.db.TheDatabase
 
 import kotlinx.coroutines.CoroutineScope
@@ -44,15 +46,43 @@ import android.provider.DocumentsContract
 class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
     private val TAG="ShareReceiver"
 
-    fun getLastPathPart(uri:Uri?):String? {
-	val filename=uri?.lastPathSegment
-	if(filename==null)
-	    return null
-	val pos=filename.lastIndexOf('/')
-	if(pos >= 0)
-	    return filename.substring(pos+1)
-	else
-	    return filename
+    companion object {
+        fun getLastPathPart(uri:Uri?):String? {
+	    val filename=uri?.lastPathSegment
+	    if(filename==null)
+	        return null
+	    val pos=filename.lastIndexOf('/')
+	    if(pos >= 0)
+	        return filename.substring(pos+1)
+	    else
+	        return filename
+        }
+
+        fun addOrRefreshShortcut(applicationContext: Context,
+                                 st: ShareTarget, isNew: Boolean) {
+            val uriString:String=st.uri
+            var shortLabel=getLastPathPart(st.uri.toUri())
+            if(shortLabel==null)
+                shortLabel="folder"
+
+            var bits = IconUtil.getBitmapForShareTarget(applicationContext, st)
+
+            val icon = IconCompat.createWithBitmap(bits)
+
+            val shortcutInfo =
+                ShortcutInfoCompat.Builder(applicationContext, uriString)
+                .setShortLabel(shortLabel)
+                .setIcon(icon)
+                .setLongLived(true)
+                .setCategories(setOf("lu.knaff.alain.share_to_folder.category.TEXT_SHARE_TARGET"))
+                .setIntent(Intent(Intent.ACTION_DEFAULT))
+                .build()
+            if(isNew)
+                ShortcutManagerCompat.addDynamicShortcuts(applicationContext,
+                                                          listOf(shortcutInfo))
+            ShortcutManagerCompat.pushDynamicShortcut(applicationContext,
+                                                      shortcutInfo)
+        }
     }
 
     fun persistPerm(treeUri:Uri) {
@@ -60,32 +90,6 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
             .takePersistableUriPermission(treeUri,
                                           Intent.FLAG_GRANT_READ_URI_PERMISSION  or
                                           Intent.FLAG_GRANT_WRITE_URI_PERMISSION )
-    }
-
-    fun addOrRefreshShortcut(treeUri:Uri, isNew:Boolean) {
-        val uriString:String=treeUri.toString()
-        var shortLabel=getLastPathPart(treeUri)
-        if(shortLabel==null)
-            shortLabel="folder"
-
-        val authority = treeUri.authority!!
-        var bits = IconUtil.getBitmapForAuthority(this, authority)
-
-        val icon = IconCompat.createWithBitmap(bits)
-
-        val shortcutInfo =
-            ShortcutInfoCompat.Builder(applicationContext, uriString)
-            .setShortLabel(shortLabel)
-            .setIcon(icon)
-            .setLongLived(true)
-            .setCategories(setOf("lu.knaff.alain.share_to_folder.category.TEXT_SHARE_TARGET"))
-            .setIntent(Intent(Intent.ACTION_DEFAULT))
-            .build()
-        if(isNew)
-            ShortcutManagerCompat.addDynamicShortcuts(applicationContext,
-                                                      listOf(shortcutInfo))
-        ShortcutManagerCompat.pushDynamicShortcut(applicationContext,
-                                                  shortcutInfo)
     }
 
     fun processPickDirectory(treeUri:Uri?,
@@ -98,12 +102,12 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
         }
         if(persistPerm)
             persistPerm(treeUri)
-        if(addShortcut)
-            addOrRefreshShortcut(treeUri, true)
         saveFileTo(null, treeUri)
-        TheDatabase
+        val st = TheDatabase
             .getDao(applicationContext)
             .getOrCreate(treeUri.toString())
+        if(addShortcut)
+            addOrRefreshShortcut(applicationContext, st, true)
     }
 
     fun error(msg: String) {
@@ -262,22 +266,23 @@ class ShareReceiver : AppCompatActivity(), CoroutineScope by MainScope()  {
                 .setMessage(getString(R.string.share_confirm,
                                       URLDecoder.decode(key, "UTF-8")))
                 .setNegativeButton(R.string.no) { d, w  -> finish() }
-                .setNeutralButton(R.string.yes) { d, w -> doSaveFileTo(key) }
+                .setNeutralButton(R.string.yes) { d, w -> doSaveFileTo(st) }
                 .setPositiveButton(R.string.always) {
                     d, w ->
                     dao.setAlways(key, true)
-                    doSaveFileTo(key)
+                    doSaveFileTo(st)
                 }
                 .show()
             return
         }
 
-        doSaveFileTo(key)
+        doSaveFileTo(st)
     }
 
-    fun doSaveFileTo(key: String) {
+    fun doSaveFileTo(st: ShareTarget) {
+        val key=st.uri
         val uri=key.toUri()
-        addOrRefreshShortcut(uri,false)
+        addOrRefreshShortcut(applicationContext, st, false)
         saveFileTo(key, uri)
     }
 

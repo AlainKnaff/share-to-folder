@@ -1,6 +1,6 @@
 package lu.knaff.alain.share_to_folder
 
-import androidx.core.graphics.createBitmap
+import java.io.File
 import android.text.TextPaint
 import android.util.Log
 import android.graphics.Paint
@@ -11,6 +11,11 @@ import android.graphics.Bitmap
 import android.content.pm.PackageManager
 import android.content.pm.ApplicationInfo
 import android.content.Context
+import androidx.core.net.toUri
+import androidx.core.graphics.createBitmap
+import android.graphics.BitmapFactory
+
+import lu.knaff.alain.share_to_folder.db.ShareTarget
 
 class IconUtil {
     companion object {
@@ -83,5 +88,33 @@ class IconUtil {
             }
             return bits
         }
+
+        fun getIconFile(ctx: Context, uid: Int, makeDir: Boolean) : File {
+            val iconsDir = File(ctx.filesDir, "icons")
+            if(makeDir) {
+                check(iconsDir.isDirectory || iconsDir.mkdirs()) {
+                    "Could not create icons directory"
+                }
+            }
+            return File(iconsDir, uid.toString())
+        }
+
+        fun getBitmapForShareTarget(ctx: Context, target: ShareTarget) : Bitmap {
+            val destination = getIconFile(ctx, target.uid, false)
+            var bitmap : Bitmap? = null
+            try {
+                if(destination.isFile)
+                    bitmap = BitmapFactory.decodeFile(destination.absolutePath)
+            } catch(e: Exception) {
+                Log.i(TAG, "exception getting bitmap for "+target.uid, e)
+            }
+            if(bitmap == null) {
+                val treeUri = target.uri.toUri()
+                val authority = treeUri.authority!!
+                bitmap = getBitmapForAuthority(ctx, authority)
+            }
+            return bitmap
+        }
+
     }
 }

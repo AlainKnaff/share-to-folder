@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_set_custom_icon"
+        android:title="@string/set_custom_icon"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_clear_custom_icon"
+        android:title="@string/clear_custom_icon"
+        app:showAsAction="never" />
+</menu>

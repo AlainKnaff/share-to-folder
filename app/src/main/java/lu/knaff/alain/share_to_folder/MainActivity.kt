@@ -12,7 +12,10 @@ package lu.knaff.alain.share_to_folder
 
 import java.net.URLDecoder
 
-import android.app.Activity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
 import android.os.Bundle
 import android.view.View
 import android.net.Uri
@@ -21,22 +24,25 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.widget.ImageView
+import android.widget.PopupMenu
+import android.app.AlertDialog
 import android.annotation.SuppressLint
 
+import androidx.activity.ComponentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.lifecycleScope
 
 import lu.knaff.alain.share_to_folder.db.TheDatabase
 import lu.knaff.alain.share_to_folder.db.ShareTarget
 import lu.knaff.alain.share_to_folder.db.Dao
 
-
-
-class MainActivity : Activity() {
+class MainActivity : ComponentActivity() {
     private val TAG="MainActivity"
 
     fun getDao() : Dao {
@@ -77,12 +83,14 @@ class MainActivity : Activity() {
         }
     }
 
+    lateinit var recyclerView : RecyclerView
+
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main)
 
-        val recyclerView=findViewById<RecyclerView>(R.id.share_targets)
+        recyclerView=findViewById<RecyclerView>(R.id.share_targets)
         adapter=StfAdapter()
         recyclerView.adapter=adapter
         recyclerView.layoutManager=LinearLayoutManager(this)
@@ -113,12 +121,31 @@ class MainActivity : Activity() {
             lateinit var shareTarget:ShareTarget
 
             init {
-                view.setOnClickListener(this)
-                text.setOnClickListener(this)
+                icon.setOnClickListener { v -> iconMenu(v) }
             }
 
-            override fun onClick(view: View)
-            {
+            override fun onClick(view: View) {
+            }
+            
+            fun iconMenu(view: View) {
+                val position = bindingAdapterPosition
+                if (position == RecyclerView.NO_POSITION)
+                    return
+                val popup = PopupMenu(view.context, view)
+                popup.menuInflater.inflate(R.menu.icon_menu, popup.menu)
+                popup.setOnMenuItemClickListener { menuItem ->
+                    val item = shareTargets[position]
+                    when (menuItem.itemId) {
+                        R.id.action_set_custom_icon -> {
+                            onSetCustomIcon(item, position)
+                        }
+                        R.id.action_clear_custom_icon -> {
+                            onClearCustomIcon(item, position);
+                        }
+                        else -> false
+                    }
+                }
+                popup.show()
             }
         }
 
@@ -153,8 +180,11 @@ class MainActivity : Activity() {
             val docId = Uri.decode(docIdEncoded)
 
             holder.text.text=URLDecoder.decode(docId, "UTF-8")
-            holder.icon.setImageBitmap(IconUtil.getBitmapForAuthority(this@MainActivity,
-                                                                      authority))
+
+            holder
+                .icon
+                .setImageBitmap(IconUtil.getBitmapForShareTarget(this@MainActivity,
+                                                                 shareTarget))
             holder.icon.contentDescription = authority
             holder.shareTarget=shareTarget
             restyleHolder(holder, shareTarget)
@@ -194,6 +224,71 @@ class MainActivity : Activity() {
             )
             shareTargets.removeAt(position)
             notifyItemRemoved(position)
+        }
+
+        private var setIconShareTarget : ShareTarget? = null;
+        private var setIconPosition : Int? = null;
+
+        fun finalizeIconChange(item: ShareTarget, position: Int) {
+            notifyItemChanged(position)
+            ShareReceiver.addOrRefreshShortcut(applicationContext, item, false);
+        }
+        
+        private val uploadIcon =
+            registerForActivityResult(ActivityResultContracts.OpenDocument()) {
+                uri ->
+                val st = setIconShareTarget
+                if (uri == null || st == null) {
+                    return@registerForActivityResult
+                }
+
+                lifecycleScope.launch {
+                    recyclerView.suppressLayout(true)
+                    try {
+                        withContext(Dispatchers.IO) {
+                            val destination = IconUtil
+                                .getIconFile(this@MainActivity, st.uid,
+                                             true);
+                            contentResolver.openInputStream(uri)?.use { input ->
+                                destination.outputStream().use { output ->
+                                    input.copyTo(output)
+                                }
+                            } ?: error("Could not open selected icon")
+                        }
+                        finalizeIconChange(st, setIconPosition!!)
+                    } catch (e: Exception) {
+                        val builder: AlertDialog.Builder =
+                            AlertDialog.Builder(this@MainActivity)
+                        builder
+                            .setMessage(e.message)
+                            .show()
+                    } finally {
+                        recyclerView.suppressLayout(false)
+                        setIconShareTarget = null;
+                    }
+                }
+            }
+
+        fun onSetCustomIcon(item: ShareTarget, position: Int): Boolean {
+            if(setIconShareTarget != null) {
+                val builder: AlertDialog.Builder =
+                    AlertDialog.Builder(this@MainActivity)
+                builder
+                    .setMessage("Icon upload already in progress")
+                    .show()
+            }
+            setIconShareTarget=item
+            setIconPosition = position
+            uploadIcon.launch(arrayOf("image/*"))
+            return true
+        }
+
+        fun onClearCustomIcon(item: ShareTarget, position: Int): Boolean {
+            val file = IconUtil.getIconFile(this@MainActivity, item.uid,
+                                            false)
+            file.delete()
+            finalizeIconChange(item, position)
+            return true
         }
     }
 }
